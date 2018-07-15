@@ -17,9 +17,10 @@ import javafx.stage.Window;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.prefs.Preferences;
+
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class Main extends Application {
 
@@ -63,6 +64,17 @@ public class Main extends Application {
     private void showWelcome() {
         if (System.getProperty("os.name").toLowerCase().contains("win")) {
             PREFS.putBoolean("isWindows", true);
+            String userHome = System.getProperty("user.home");
+            Path extractedPath = Paths.get(userHome, "youtube-dl.exe");
+            try {
+                Files.copy(getClass().getResource("/youtube-dl.exe").openStream(), extractedPath, REPLACE_EXISTING);
+                //ffmpeg required files
+                Files.copy(getClass().getResource("/ffmpeg/ffmpeg.exe").openStream(), Paths.get(userHome, "ffmpeg.exe"), REPLACE_EXISTING);
+                Files.copy(getClass().getResource("/ffmpeg/ffplay.exe").openStream(), Paths.get(userHome, "ffplay.exe"), REPLACE_EXISTING);
+                Files.copy(getClass().getResource("/ffmpeg/ffprobe.exe").openStream(), Paths.get(userHome, "ffprobe.exe"), REPLACE_EXISTING);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             showDownloadLocPrompt();
         } else {
             PREFS.putBoolean("isWindows", false);
@@ -72,7 +84,7 @@ public class Main extends Application {
                 return;
             }
 
-            root.getChildren().setAll(new Label("Make sure Python is installed, and enter root password:\n"));
+            root.getChildren().setAll(new Label("Make sure Python and ffmpeg are is installed,\nand enter root password:\n"));
             TextField passField = new TextField();
             root.getChildren().add(passField);
 

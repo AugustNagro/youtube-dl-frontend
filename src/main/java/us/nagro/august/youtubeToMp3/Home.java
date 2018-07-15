@@ -1,5 +1,6 @@
 package us.nagro.august.youtubeToMp3;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -15,7 +16,7 @@ import java.nio.file.Paths;
 
 public class Home {
 
-    private static final URL windowsDLExe = Home.class.getResource("/youtube-dl.exe");
+    private static final Path windowsDLExe = Paths.get(System.getProperty("user.home"), "youtube-dl.exe").toAbsolutePath();
 
     @FXML private ToggleButton audioDownloadBtn;
     @FXML private Label pasteNotice;
@@ -39,7 +40,7 @@ public class Home {
 
         downloadListView.getItems().add(youtubeUrl);
         boolean downloadAudio = audioDownloadBtn.isSelected();
-        String youtubeDlPath = isWindows ? windowsDLExe.toExternalForm() : "/usr/local/bin/youtube-dl";
+        String youtubeDlPath = isWindows ? windowsDLExe.toString() : "/usr/local/bin/youtube-dl";
 
         ProcessBuilder pb;
         if (downloadAudio) pb = new ProcessBuilder(youtubeDlPath, "-x", "--audio-format", "mp3", youtubeUrl);
@@ -49,7 +50,7 @@ public class Home {
         new Thread(() -> {
             try {
                 pb.start().waitFor();
-                downloadListView.getItems().removeAll(youtubeUrl);
+                Platform.runLater(() -> downloadListView.getItems().removeAll(youtubeUrl));
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             }
